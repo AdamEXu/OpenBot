@@ -28,120 +28,11 @@ error=None
 app = Flask(__name__)
 app.config['SECRET_KEY'] = "1bfd4baac57db7282f9a941d02511082524cbdf29bb74d60"
 
-@app.route('/')
-def index():
-    return render_template("/index.html")
-
-@app.route('/login', methods=["GET", "POST"])
-def login():
-    if request.method == 'POST':
-        answer1 = request.form.get('name')
-        answer2 = request.form.get('email')
-        if not answer1 and not answer2:
-            flash('First name and email is required!')
-        elif not answer1:
-            flash('First name is required!')
-        elif not answer2:
-            flash('Work email is required!')
-        else:
-            with open('users.csv', 'r') as file:
-                reader = csv.reader(file)
-                # print(reader)
-                for row in reader:
-                    if answer1==row[1] and answer2==row[3]:
-                        return redirect(f'/report?userid={row[0]}')
-            flash('Invalid Credintials')
-    global error
-    if error != None:
-        flash(error)
-        error = None
-
-    return render_template("login.html")
-
-@app.route('/report', methods=['GET', "POST"])
-def report():
-    global error
-    if request.method == 'POST':
-        answer1 = request.form.get('answer1')
-        answer2 = request.form.get('answer2')
-        if not answer1 and not answer2:
-            flash('Please answer the questions!')
-        elif not answer1:
-            flash('Title is required!')
-        elif not answer2:
-            flash('Content is required!')
-        else:
-            return redirect("/submited")
-    userid = request.args.get("userid")
-    if userid == None:
-        error = "Please Login First!"
-        return redirect('/login')
-    tags = []
-    questions = []
-    with open('usertags.csv', 'r') as file:
-        reader = csv.reader(file)
-        for row in reader:
-            if row[0] == userid and row[0] not in tags:
-                tags.append(row[1])
-
-    with open('questions.csv', 'r') as file:
-        reader = csv.reader(file)
-        for row in reader:
-            if row[0] in tags:
-                questions.append(row[1])
-    
-    return render_template('dailyform.html', questions=questions)
-
-@app.route('/hello', methods=['POST', 'GET'])
-def hello():
-    print("/hello - SUCCESS!!!")
-    today = datetime.date.today()
-    date = today.strftime("%A, %B %-d, %Y")
-    return jsonify(response_type="in_channel", text=f"*Open bot says hello...*\nToday is {date}! What a nice day.\nI am OpenBot! Use `/about` to learn more about me or `/help` to see my list commands.")
-
-@app.route('/help', methods=['GET', 'POST'])
-def help():
-    message = [
-        "Want help?",
-        "There's no help!"
-    ]
-    return jsonify(response_type="in_channel", text=message_builder(message))
-
-@app.route('/about')
-def about():
-    message = [
-        "You just ran `/about`! btw my name is open bot goodbye"
-    ]
-    return jsonify(response_type="in_channel", text=message_builder(message))
-
-@app.route('/answer', methods=['GET', 'POST'])
-def answer():
-    text = request.form.get('text', None)
-    user = request.form.get('user_id', None)
-    message = [
-            f"*DEBUG:* <@{user}> response recieved, contents:", text, "Response Recieved, {n} questions remain. Next question:", "{question}"
-            ]
-
-#@app.route('/copycat', methods=['GET', 'POST'])
 def copycat(fromchannel, user):
     client = WebClient(token=os.environ.get("SLACK_BOT_TOKEN"))
     logger = logging.getLogger(__name__)
     channel_name = "openbot-responses"
     conversation_id = client.conversations_open(users=user)['channel']['id']
-    
-    #try:
-     #   for result in client.conversations_list():
-      #      if conversation_id is not None:
-       #         break
-        #    for channel in result["channels"]:
-         #       if channel["name"] == channel_name:
-          #          conversation_id = channel["id"]
-           #         break
-
-
-   # except SlackApiError as e:
-    #    print(f"Error: {e}")
-
 
     conv_history = []
     channel_id = fromchannel
@@ -157,21 +48,11 @@ def copycat(fromchannel, user):
 
     except SlackApiError as e:
         logger.error("Error creating conversation: {}".format(e))
-    #print(msg)
-
-    if msg == "pickles and mayonaise testing area poop emoji" and fromchannel == 'C03L6AU206L':
-        # try:
-        #     result = client.chat_postMessage(
-        #             channel=conversation_id,text=message_builder([f"User <@{user}> started a report in <#{fromchannel}>.", f"Timestamp: {datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')}"])
-        #     )
-        # except SlackApiError as e:
-        #     print(f"Error: {e}")
-
+    if msg == "daily" and fromchannel == 'C03L6AU206L':
         try:
             result = client.chat_postMessage(channel=fromchannel,text=message_builder([f"User <@{user}> started a report here in <#{fromchannel}>", f"{question_gen(1)[0]}"]))
         except SlackApiError as e:
             print(f"Error: {e}")
-    # if message begins with report, print hello
     elif msg.startswith("report"):
         param = msg[7:].split()
         try:
@@ -181,8 +62,6 @@ def copycat(fromchannel, user):
         detail = False
         if param[0] == "summary":
             result = client.chat_postMessage(channel=fromchannel,text="👀")
-            #detail=True
-            #del param[0]
         elif param[0] == "?" or param[0] == "help":
             result = client.chat_postMessage(channel=fromchannel,text=message_builder([
                 "*report help:*",
@@ -308,15 +187,6 @@ def copycat(fromchannel, user):
             result = client.chat_postMessage(channel=conversation_id,text=message_builder([f"User <@{user}>'s status:", f"`{msg}`"]))
         except SlackApiError as e:
             print(f"Error: {e}")
-# try:
-        #     result = client.chat_postMessage(channel=conversation_id,text=message_builder([f"*User <@{user}> answered question {lastnum}:*", f"`{lastquestion}`", "*Their response was:*", f"`{msg}`"]))
-        # except SlackApiError as e:
-        #     print(f"Error: {e}")
-        # message = ["User <@{}> submitted a response to the question: {}".format(user, lastquestion), f"Q{int(lastnum)+1}: {question_gen(1)[0]}"]
-        # try:
-        #     result = client.chat_postMessage(channel=fromchannel,text=message_builder(message))
-        # except SlackApiError as e:
-        #     print(f"Error: {e}")
 
 
 #    return jsonify()
@@ -329,7 +199,6 @@ def event():
     user = event["user"]
     channel = event["channel"]
     print(event)
-    #channel = request.form.get("channel")
     copycat(channel, user)
     return ""
 
