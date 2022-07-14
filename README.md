@@ -20,4 +20,4 @@ Comes with some basic report commands, run `report ?` or `report help` for synta
 ### Check the wiki for more detailed instructions
 
 ## Authors:
-[https://github.com/AdamEXu](@AdamEXu)
+[@AdamEXu](https://github.com/AdamEXu) [Adam Xu](https://adamthegreat.rocks)
