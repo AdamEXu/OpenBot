@@ -1,7 +1,7 @@
-dailystatuschannel::GHH9FV9MZ
-botuserid::U02GA25C8GY
+dailystatuschannel::2BH3FV52V
+botuserid::U02GA27D23J
 reportcommand::report
 defaultdays::10
 userscsv::users
 responsescsv::responses
-token::xoxb-81819621350-2554073416576-MxiMF16gI1L8czyXR88TCYNE
+token::not-real-token-3Dj3s9Ddsla-D8Dxi3D3Kde3dIs3s
