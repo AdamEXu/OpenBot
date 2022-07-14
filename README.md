@@ -18,3 +18,6 @@ Comes with some basic report commands, run `report ?` or `report help` for synta
 11. You're good to go!
 
 ### Check the wiki for more detailed instructions
+
+## Authors:
+[https://github.com/AdamEXu](@AdamEXu)
