@@ -44,7 +44,7 @@ def eventfunc(fromchannel, user):
             param.append(config[3])
         detail = False
         if param[0] == "?" or param[0] == "help":
-            result = client.chat_postMessage(channel=fromchannel,text="report [detail] @user [num_of_days]\n[] is optional\n*Example:*\n`report @user 10`\n`report summary @user 10`\n`report detail @user 5`")
+            result = client.chat_postMessage(channel=fromchannel,text="report [detail] @user [num_of_days (default is 10)]\n[] is optional\n*Example:*\n`report @user 10`\n`report @user 10`\n`report detail @user 5`")
         else:
             if param[0] == "detail":
                 detail=True
