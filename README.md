@@ -1,4 +1,4 @@
-# OpenBot!
+# OpenBot
 An open source version of [GeekBot](https://geekbot.com/). 
 The first production use of this bot is by a 20.72 **BILLION** dollar market cap company as of July 14, 2022. 
 
