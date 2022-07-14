@@ -15,3 +15,5 @@ Comes with some basic report commands, run `report ?` or `report help` for synta
 9. Run `app.py`
 10. **(ONLY DO THIS STEP IF YOU ALREADY HAVE AN EXISTING STATUS CHANNEL)** In Slack, open a direct message with the bot and type in `migrate [channel id]`
 11. You're good to go!
+
+### Check the wiki for more detailed instructions
