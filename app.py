@@ -36,155 +36,162 @@ def eventfunc(fromchannel, user):
 
     except SlackApiError as e:
         logger.error("Error creating conversation: {}".format(e))
-    if msg.startswith(config[2]):
-        param = msg[7:].split()
+
+    if msg == "help" or msg == "report" or msg == "Report" or msg == "Help" or msg == "HELP" or msg == "<@"+config[1]+"> help":
+        result = client.chat_postMessage(channel=fromchannel,text="report [detail] @user [num_of_days (default is 10)]\n[] is optional\n*Example:*\n`report @user 10`\n`report @user 10`\n`report detail @user 5`")
+    elif msg.startswith(config[2]):
         try:
-            int(param[-1])
-        except:
-            param.append(config[3])
-        detail = False
-        if param[0] == "?" or param[0] == "help":
-            result = client.chat_postMessage(channel=fromchannel,text="report [detail] @user [num_of_days (default is 10)]\n[] is optional\n*Example:*\n`report @user 10`\n`report @user 10`\n`report detail @user 5`")
-        else:
-            if param[0] == "detail":
-                detail=True
-                del param[0]
-            if param[0] == "all":
-                userinfos = []
-                reports = []
-                counters = []
-                with open(f'{config[4]}.csv', 'r') as f:
-                    reader = csv.reader(f)
-                    for row in reader:
-                        if row[0] != "UserID":
-                            userinfos.append(row)
-                for i in range(len(userinfos)):
-                    dates = []
-                    userinfo = userinfos[i]
-                    print(userinfo)
-                    counter = 0
-                    with open(f'{config[5]}.csv', 'r') as f:
-                        reader = csv.reader(f)
-                        for row in reader:
-                            if row[0] == 'UserID':
-                                continue
-                            elif row[0] == userinfo[5]:
-                                print(row)
-                                if datetime.datetime.strptime(row[3], '%Y,%m,%d,%H,%M,%S') >= datetime.datetime.now() - datetime.timedelta(days=int(param[-1])-1):
-                                    reports.append(f"<@{userinfo[5]}> {datetime.datetime.strptime(row[3], '%Y,%m,%d,%H,%M,%S').strftime('%m/%d/%Y')} Status: `{row[2]}`")
-                                    if not datetime.datetime.strptime(row[3], '%Y,%m,%d,%H,%M,%S').strftime('%m,%d,%Y') in dates:
-                                        counter+=1
-                                        dates.append(datetime.datetime.strptime(row[3], '%Y,%m,%d,%H,%M,%S').strftime('%m,%d,%Y'))
-                    counters.append(counter)
-                thepeople = ""
-                for i in range(len(userinfos)-1):
-                    thepeople+=f"<@{userinfos[i][5]}>, "
-                thepeople+=f"and <@{userinfos[-1][5]}>"
-                leaderboard = []
-                for i in range(len(userinfos)):
-                    temp = ""
-                    temp+=f"<@{userinfos[i][5]}>: "
-                    temp+=str(counters[i])
-                    leaderboard.append(temp)
-                leaderboard.sort(key=lambda x: x.split(": ")[1], reverse=True)
-                try:
-                    if not detail:
-                        result = client.chat_postMessage(
-                            channel=fromchannel,text=message_builder([f"*Report for *{thepeople}*:*", f"*Average engagement for these {len(userinfos)} people in the last {param[-1]} days:*", f"{round(sum(counters)/len(userinfos), 2)}/{float(param[-1])}        {round((sum(counters)/(len(userinfos)))/int(param[-1])*100, 2)}%", "*Leaderboard:*"] + leaderboard))
-                    else:
-                        print(reports, "\n\n\n\n\n\n")
-                        result = client.chat_postMessage(
-                            channel=fromchannel,text=message_builder([f"*Report for *{thepeople}*:*", f"*Average engagement for these {len(userinfos)} people in the last {param[-1]} days:*", f"{round(sum(counters)/len(userinfos), 2)}/{float(param[-1])}        {round((sum(counters)/(len(userinfos)))/int(param[-1])*100, 2)}%", "*Leaderboard:*"] + leaderboard + reports))
-
-                except SlackApiError as e:
-                    print(f"Error: {e}")
-            elif len(param) == 2:
-                print(param[0][2:].rstrip(">"))
-                userinfo = []
-                with open(f'{config[4]}.csv', 'r') as f:
-                        reader = csv.reader(f)
-                        for row in reader:
-                            print(row)
-                            if param[0][2:].rstrip(">") == row[5]:
-                                userinfo = row
-                                break
-                print(userinfo)
-                counter = 0
-                reports = []
-                dates = []
-                with open(f'{config[5]}.csv', 'r') as f:
-                        reader = csv.reader(f)
-                        for row in reader:
-                            print(row)
-                            print(userinfo)
-                            if row[0] != 'UserID':
-                                if row[0] == userinfo[5] and datetime.datetime.strptime(row[3], '%Y,%m,%d,%H,%M,%S') >= datetime.datetime.now() - datetime.timedelta(days=int(param[-1])-1):
-                                    reports.append(f"{datetime.datetime.strptime(row[3], '%Y,%m,%d,%H,%M,%S').strftime('%m/%d/%Y')} Status: `{row[2]}`")
-                                    if not datetime.datetime.strptime(row[3], '%Y,%m,%d,%H,%M,%S').strftime('%m,%d,%Y') in dates:
-                                        counter+=1
-                                        dates.append(datetime.datetime.strptime(row[3], '%Y,%m,%d,%H,%M,%S').strftime('%m,%d,%Y'))
-
-                try:
-                    if detail:
-                        result = client.chat_postMessage(
-                            channel=fromchannel,text=message_builder([f"*Report for* <@{userinfo[5]}>*:*", f"*Engagement in the last {param[-1]} days:*", f"{counter}/{param[-1]}        {counter/int(param[-1])*100}%"]
-                                + reports))
-                    else:
-                       result = client.chat_postMessage(channel=fromchannel,text=message_builder([f"*Report for* <@{userinfo[5]}>*:*", f"*Engagement in the last {param[-1]} days:*", f"{counter}/{param[-1]}        {counter/int(param[-1])*100}%"]))
-                except SlackApiError as e:
-                    print(f"Error: {e}")
+            param = msg[7:].split()
+            try:
+                int(param[-1])
+            except:
+                param.append(config[3])
+            detail = False
+            if param[0] == "?" or param[0] == "help":
+                result = client.chat_postMessage(channel=fromchannel,text="report [detail] @user [num_of_days (default is 10)]\n[] is optional\n*Example:*\n`report @user 10`\n`report @user 10`\n`report detail @user 5`")
             else:
-                userinfos = []
-                reports = []
-                counters = []
-                for i in range(len(param)-1):
-                    print(param)
-                    print(param[i][2:13])
+                if param[0] == "detail":
+                    detail=True
+                    del param[0]
+                if param[0] == "all":
+                    userinfos = []
+                    reports = []
+                    counters = []
+                    with open(f'{config[4]}.csv', 'r') as f:
+                        reader = csv.reader(f)
+                        for row in reader:
+                            if row[0] != "UserID":
+                                userinfos.append(row)
+                    for i in range(len(userinfos)):
+                        dates = []
+                        userinfo = userinfos[i]
+                        print(userinfo)
+                        counter = 0
+                        with open(f'{config[5]}.csv', 'r') as f:
+                            reader = csv.reader(f)
+                            for row in reader:
+                                if row[0] == 'UserID':
+                                    continue
+                                elif row[0] == userinfo[5]:
+                                    print(row)
+                                    if datetime.datetime.strptime(row[3], '%Y,%m,%d,%H,%M,%S') >= datetime.datetime.now() - datetime.timedelta(days=int(param[-1])-1):
+                                        reports.append(f"<@{userinfo[5]}> {datetime.datetime.strptime(row[3], '%Y,%m,%d,%H,%M,%S').strftime('%m/%d/%Y')} Status: `{row[2]}`")
+                                        if not datetime.datetime.strptime(row[3], '%Y,%m,%d,%H,%M,%S').strftime('%m,%d,%Y') in dates:
+                                            counter+=1
+                                            dates.append(datetime.datetime.strptime(row[3], '%Y,%m,%d,%H,%M,%S').strftime('%m,%d,%Y'))
+                        counters.append(counter)
+                    thepeople = ""
+                    for i in range(len(userinfos)-1):
+                        thepeople+=f"<@{userinfos[i][5]}>, "
+                    thepeople+=f"and <@{userinfos[-1][5]}>"
+                    leaderboard = []
+                    for i in range(len(userinfos)):
+                        temp = ""
+                        temp+=f"<@{userinfos[i][5]}>: "
+                        temp+=str(counters[i])
+                        leaderboard.append(temp)
+                    leaderboard.sort(key=lambda x: x.split(": ")[1], reverse=True)
+                    try:
+                        if not detail:
+                            result = client.chat_postMessage(
+                                channel=fromchannel,text=message_builder([f"*Report for *{thepeople}*:*", f"*Average engagement for these {len(userinfos)} people in the last {param[-1]} days:*", f"{round(sum(counters)/len(userinfos), 2)}/{float(param[-1])}        {round((sum(counters)/(len(userinfos)))/int(param[-1])*100, 2)}%", "*Leaderboard:*"] + leaderboard))
+                        else:
+                            print(reports, "\n\n\n\n\n\n")
+                            result = client.chat_postMessage(
+                                channel=fromchannel,text=message_builder([f"*Report for *{thepeople}*:*", f"*Average engagement for these {len(userinfos)} people in the last {param[-1]} days:*", f"{round(sum(counters)/len(userinfos), 2)}/{float(param[-1])}        {round((sum(counters)/(len(userinfos)))/int(param[-1])*100, 2)}%", "*Leaderboard:*"] + leaderboard + reports))
+
+                    except SlackApiError as e:
+                        print(f"Error: {e}")
+                elif len(param) == 2:
+                    print(param[0][2:].rstrip(">"))
                     userinfo = []
                     with open(f'{config[4]}.csv', 'r') as f:
-                            f.seek(0)
                             reader = csv.reader(f)
                             for row in reader:
                                 print(row)
-                                if param[i][2:13] == row[5]:
+                                if param[0][2:].rstrip(">") == row[5]:
                                     userinfo = row
                                     break
                     print(userinfo)
                     counter = 0
+                    reports = []
                     dates = []
                     with open(f'{config[5]}.csv', 'r') as f:
-                            f.seek(0)
                             reader = csv.reader(f)
                             for row in reader:
                                 print(row)
-                                if row[0] == userinfo[5] and datetime.datetime.strptime(row[3], '%Y,%m,%d,%H,%M,%S') >= datetime.datetime.now() - datetime.timedelta(days=int(param[-1])-1):
-                                    reports.append(f"<@{userinfo[5]}> {datetime.datetime.strptime(row[3], '%Y,%m,%d,%H,%M,%S').strftime('%m/%d/%Y')} Status: `{row[2]}`")
-                                    if not datetime.datetime.strptime(row[3], '%Y,%m,%d,%H,%M,%S').strftime('%m,%d,%Y') in dates:
-                                        counter+=1
-                                        dates.append(datetime.datetime.strptime(row[3], '%Y,%m,%d,%H,%M,%S').strftime('%m,%d,%Y'))
-                    userinfos.append(userinfo)
-                    counters.append(counter)
-                thepeople = ""
-                for i in range(len(param)-2):
-                    thepeople+=param[i]+", "
-                thepeople+="and "+param[len(param)-2]
-                leaderboard = []
-                for i in range(len(param)-1):
-                    temp = ""
-                    temp+=param[i]+":   "
-                    temp+=str(counters[i])
-                    leaderboard.append(temp)
-                leaderboard.sort(key=lambda x: x.split(": ")[0], reverse=False)
-                try:
-                    if not detail:
-                        result = client.chat_postMessage(
-                            channel=fromchannel,text=message_builder([f"*Report for *{thepeople}*:*", f"*Average engagement for these {len(param)-1} people in the last {param[-1]} days:*", f"{sum(counters)/(len(param)-1)}/{float(param[-1])}        {(sum(counters)/(len(param)-1))/int(param[-1])*100}%", "*Leaderboard:*"] + leaderboard))
-                    else:
-                        result = client.chat_postMessage(
-                            channel=fromchannel,text=message_builder([f"*Report for *{thepeople}*:*", f"*Average engagement for these {len(param)-1} people in the last {param[-1]} days:*", f"{sum(counters)/(len(param)-1)}/{float(param[-1])}        {(sum(counters)/(len(param)-1))/int(param[-1])*100}%", "*Leaderboard:*"] + leaderboard + reports))
+                                print(userinfo)
+                                if row[0] != 'UserID':
+                                    if row[0] == userinfo[5] and datetime.datetime.strptime(row[3], '%Y,%m,%d,%H,%M,%S') >= datetime.datetime.now() - datetime.timedelta(days=int(param[-1])-1):
+                                        reports.append(f"{datetime.datetime.strptime(row[3], '%Y,%m,%d,%H,%M,%S').strftime('%m/%d/%Y')} Status: `{row[2]}`")
+                                        if not datetime.datetime.strptime(row[3], '%Y,%m,%d,%H,%M,%S').strftime('%m,%d,%Y') in dates:
+                                            counter+=1
+                                            dates.append(datetime.datetime.strptime(row[3], '%Y,%m,%d,%H,%M,%S').strftime('%m,%d,%Y'))
 
-                except SlackApiError as e:
-                    print(f"Error: {e}")
+                    try:
+                        if detail:
+                            result = client.chat_postMessage(
+                                channel=fromchannel,text=message_builder([f"*Report for* <@{userinfo[5]}>*:*", f"*Engagement in the last {param[-1]} days:*", f"{counter}/{param[-1]}        {counter/int(param[-1])*100}%"]
+                                    + reports))
+                        else:
+                        result = client.chat_postMessage(channel=fromchannel,text=message_builder([f"*Report for* <@{userinfo[5]}>*:*", f"*Engagement in the last {param[-1]} days:*", f"{counter}/{param[-1]}        {counter/int(param[-1])*100}%"]))
+                    except SlackApiError as e:
+                        print(f"Error: {e}")
+                else:
+                    userinfos = []
+                    reports = []
+                    counters = []
+                    for i in range(len(param)-1):
+                        print(param)
+                        print(param[i][2:13])
+                        userinfo = []
+                        with open(f'{config[4]}.csv', 'r') as f:
+                                f.seek(0)
+                                reader = csv.reader(f)
+                                for row in reader:
+                                    print(row)
+                                    if param[i][2:13] == row[5]:
+                                        userinfo = row
+                                        break
+                        print(userinfo)
+                        counter = 0
+                        dates = []
+                        with open(f'{config[5]}.csv', 'r') as f:
+                                f.seek(0)
+                                reader = csv.reader(f)
+                                for row in reader:
+                                    print(row)
+                                    if row[0] == userinfo[5] and datetime.datetime.strptime(row[3], '%Y,%m,%d,%H,%M,%S') >= datetime.datetime.now() - datetime.timedelta(days=int(param[-1])-1):
+                                        reports.append(f"<@{userinfo[5]}> {datetime.datetime.strptime(row[3], '%Y,%m,%d,%H,%M,%S').strftime('%m/%d/%Y')} Status: `{row[2]}`")
+                                        if not datetime.datetime.strptime(row[3], '%Y,%m,%d,%H,%M,%S').strftime('%m,%d,%Y') in dates:
+                                            counter+=1
+                                            dates.append(datetime.datetime.strptime(row[3], '%Y,%m,%d,%H,%M,%S').strftime('%m,%d,%Y'))
+                        userinfos.append(userinfo)
+                        counters.append(counter)
+                    thepeople = ""
+                    for i in range(len(param)-2):
+                        thepeople+=param[i]+", "
+                    thepeople+="and "+param[len(param)-2]
+                    leaderboard = []
+                    for i in range(len(param)-1):
+                        temp = ""
+                        temp+=param[i]+":   "
+                        temp+=str(counters[i])
+                        leaderboard.append(temp)
+                    leaderboard.sort(key=lambda x: x.split(": ")[0], reverse=False)
+                    try:
+                        if not detail:
+                            result = client.chat_postMessage(
+                                channel=fromchannel,text=message_builder([f"*Report for *{thepeople}*:*", f"*Average engagement for these {len(param)-1} people in the last {param[-1]} days:*", f"{sum(counters)/(len(param)-1)}/{float(param[-1])}        {(sum(counters)/(len(param)-1))/int(param[-1])*100}%", "*Leaderboard:*"] + leaderboard))
+                        else:
+                            result = client.chat_postMessage(
+                                channel=fromchannel,text=message_builder([f"*Report for *{thepeople}*:*", f"*Average engagement for these {len(param)-1} people in the last {param[-1]} days:*", f"{sum(counters)/(len(param)-1)}/{float(param[-1])}        {(sum(counters)/(len(param)-1))/int(param[-1])*100}%", "*Leaderboard:*"] + leaderboard + reports))
+
+                    except SlackApiError as e:
+                        print(f"Error: {e}")
+
+        except:
+            result = client.chat_postMessage(channel=fromchannel,text=message_builder(["*Please follow the correct syntax for the command.*\nFor help, say `help`"]))
 
     elif msg.startswith("migrate"):
         param = msg[7:].split()
