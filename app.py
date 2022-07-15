@@ -37,9 +37,9 @@ def eventfunc(fromchannel, user):
     except SlackApiError as e:
         logger.error("Error creating conversation: {}".format(e))
 
-    if msg == "help" or msg == "report" or msg == "Report" or msg == "Help" or msg == "HELP" or msg == "<@"+config[1]+"> help":
-        result = client.chat_postMessage(channel=fromchannel,text="report [detail] @user [num_of_days (default is 10)]\n[] is optional\n*Example:*\n`report @user 10`\n`report @user 10`\n`report detail @user 5`")
-    elif msg.startswith(config[2]):
+    if msg.lower() == "help" or msg == "<@"+config[1]+">":
+        result = client.chat_postMessage(channel=fromchannel,text=f"report [detail] @user [num_of_days]\n[] is optional\nDefault for num_of_days is {config[3]}\n*Example:*\n`report @user 10`\n`report all 10`\n`report detail @user 5`\n`report detail all 3`")
+    elif msg.lower().startswith(config[2]):
         try:
             param = msg[7:].split()
             try:
@@ -48,7 +48,7 @@ def eventfunc(fromchannel, user):
                 param.append(config[3])
             detail = False
             if param[0] == "?" or param[0] == "help":
-                result = client.chat_postMessage(channel=fromchannel,text="report [detail] @user [num_of_days (default is 10)]\n[] is optional\n*Example:*\n`report @user 10`\n`report @user 10`\n`report detail @user 5`")
+                result = client.chat_postMessage(channel=fromchannel,text=f"report [detail] @user [num_of_days]\n[] is optional\nDefault for num_of_days is {config[3]}\n*Example:*\n`report @user 10`\n`report all 10`\n`report detail @user 5`\n`report detail all 3`")
             else:
                 if param[0] == "detail":
                     detail=True
@@ -94,11 +94,11 @@ def eventfunc(fromchannel, user):
                     try:
                         if not detail:
                             result = client.chat_postMessage(
-                                channel=fromchannel,text=message_builder([f"*Report for *{thepeople}*:*", f"*Average engagement for these {len(userinfos)} people in the last {param[-1]} days:*", f"{round(sum(counters)/len(userinfos), 2)}/{float(param[-1])}        {round((sum(counters)/(len(userinfos)))/int(param[-1])*100, 2)}%", "*Leaderboard:*"] + leaderboard))
+                                channel=fromchannel,text=message_builder([f"*Report for *{thepeople}*:*", f"*Average engagement for these {len(userinfos)} people in the last {param[-1]} days:*", f"{round(sum(counters)/len(userinfos), 1)}/{float(param[-1])}        {int((sum(counters)/(len(userinfos)))/int(param[-1])*100)}%", "*Leaderboard:*"] + leaderboard))
                         else:
                             print(reports, "\n\n\n\n\n\n")
                             result = client.chat_postMessage(
-                                channel=fromchannel,text=message_builder([f"*Report for *{thepeople}*:*", f"*Average engagement for these {len(userinfos)} people in the last {param[-1]} days:*", f"{round(sum(counters)/len(userinfos), 2)}/{float(param[-1])}        {round((sum(counters)/(len(userinfos)))/int(param[-1])*100, 2)}%", "*Leaderboard:*"] + leaderboard + reports))
+                                channel=fromchannel,text=message_builder([f"*Report for *{thepeople}*:*", f"*Average engagement for these {len(userinfos)} people in the last {param[-1]} days:*", f"{round(sum(counters)/len(userinfos), 1)}/{float(param[-1])}        {int((sum(counters)/(len(userinfos)))/int(param[-1])*100)}%", "*Leaderboard:*"] + leaderboard + reports))
 
                     except SlackApiError as e:
                         print(f"Error: {e}")
@@ -131,10 +131,10 @@ def eventfunc(fromchannel, user):
                     try:
                         if detail:
                             result = client.chat_postMessage(
-                                channel=fromchannel,text=message_builder([f"*Report for* <@{userinfo[5]}>*:*", f"*Engagement in the last {param[-1]} days:*", f"{counter}/{param[-1]}        {counter/int(param[-1])*100}%"]
+                                channel=fromchannel,text=message_builder([f"*Report for* <@{userinfo[5]}>*:*", f"*Engagement in the last {param[-1]} days:*", f"{counter}/{param[-1]}        {int(counter/int(param[-1])*100)}%"]
                                     + reports))
                         else:
-                        result = client.chat_postMessage(channel=fromchannel,text=message_builder([f"*Report for* <@{userinfo[5]}>*:*", f"*Engagement in the last {param[-1]} days:*", f"{counter}/{param[-1]}        {counter/int(param[-1])*100}%"]))
+                            result = client.chat_postMessage(channel=fromchannel,text=message_builder([f"*Report for* <@{userinfo[5]}>*:*", f"*Engagement in the last {param[-1]} days:*", f"{counter}/{param[-1]}        {int(counter/int(param[-1])*100)}%"]))
                     except SlackApiError as e:
                         print(f"Error: {e}")
                 else:
@@ -182,18 +182,18 @@ def eventfunc(fromchannel, user):
                     try:
                         if not detail:
                             result = client.chat_postMessage(
-                                channel=fromchannel,text=message_builder([f"*Report for *{thepeople}*:*", f"*Average engagement for these {len(param)-1} people in the last {param[-1]} days:*", f"{sum(counters)/(len(param)-1)}/{float(param[-1])}        {(sum(counters)/(len(param)-1))/int(param[-1])*100}%", "*Leaderboard:*"] + leaderboard))
+                                channel=fromchannel,text=message_builder([f"*Report for *{thepeople}*:*", f"*Average engagement for these {len(userinfos)} people in the last {param[-1]} days:*", f"{round(sum(counters)/len(userinfos), 1)}/{float(param[-1])}        {int((sum(counters)/(len(userinfos)))/int(param[-1])*100)}%", "*Leaderboard:*"] + leaderboard + leaderboard))
                         else:
                             result = client.chat_postMessage(
-                                channel=fromchannel,text=message_builder([f"*Report for *{thepeople}*:*", f"*Average engagement for these {len(param)-1} people in the last {param[-1]} days:*", f"{sum(counters)/(len(param)-1)}/{float(param[-1])}        {(sum(counters)/(len(param)-1))/int(param[-1])*100}%", "*Leaderboard:*"] + leaderboard + reports))
-
+                                channel=fromchannel,text=message_builder([f"*Report for *{thepeople}*:*", f"*Average engagement for these {len(userinfos)} people in the last {param[-1]} days:*", f"{round(sum(counters)/len(userinfos), 1)}/{float(param[-1])}        {int((sum(counters)/(len(userinfos)))/int(param[-1])*100)}%", "*Leaderboard:*"] + leaderboard + reports))
+    
                     except SlackApiError as e:
                         print(f"Error: {e}")
 
         except:
             result = client.chat_postMessage(channel=fromchannel,text=message_builder(["*Please follow the correct syntax for the command.*\nFor help, say `help`"]))
 
-    elif msg.startswith("migrate"):
+    elif msg.lower().startswith("migrate"):
         param = msg[7:].split()
         print(param)
         userids = client.conversations_members(channel=param[0])
@@ -233,7 +233,7 @@ def eventfunc(fromchannel, user):
                 continue
         try:
             result = client.chat_postMessage(
-                channel=fromchannel,text=message_builder([f"Successfully migrated {len(userids['members'])} users and {''} statuses over to your brand new shiny OpenBot system!", f"Try out a command like `report <@{userids['members'][random.randint(0,len(userids['members']))]}> {random.randint(5, 10)}`!", f"Or alternatively you can use `report help` to see the syntax of the command for yourself!"])
+                channel=fromchannel,text=message_builder([f"Successfully migrated {len(userids['members'])} users and {i} statuses over to your brand new shiny OpenBot system!", f"Try out a command like `report <@{userids['members'][random.randint(0,len(userids['members']))]}> {random.randint(5, 10)}`!", f"Or alternatively you can use `report help` to see the syntax of the command for yourself!"])
             )
         except SlackApiError as e:
             print(f"Error: {e}")
